@@ -35,21 +35,32 @@ router.get('/games/:id', function(req, res) {
 });
 
 router.post('/games/create', function(req, res) {
-  models.n64Game.create({
-    name: req.body.name,
-    releaseDate: req.body.releaseDate,
-    rating: req.body.rating,
-    doesOwn: req.body.doesOwn
-  }).then(function(game) {
-    if (game) {
-      res.setHeader('Content-Type', 'application/json');
-      res.status(201).json(game);
-    } else {
-      res.status(403).send("No Game found...");
-    }
-  }).catch(function(err) {
-    res.status(400).send("Bad request. Please try again.");
-  })
+  req.checkBody("name", "Cannot be empty.").notEmpty();
+  req.checkBody("releaseDate", "Cannot be empty.").notEmpty();
+  req.checkBody("rating", "Cannot be empty.").notEmpty();
+  req.checkBody("doesOwn", "Cannot be empty.").notEmpty();
+
+  let errors = req.validationErrors();
+
+  if (errors) {
+    res.status(400).send("No good. Retry.")
+  } else {
+    models.n64Game.create({
+      name: req.body.name,
+      releaseDate: req.body.releaseDate,
+      rating: req.body.rating,
+      doesOwn: req.body.doesOwn
+    }).then(function(game) {
+      if (game) {
+        res.setHeader('Content-Type', 'application/json');
+        res.status(201).json(game);
+      } else {
+        res.status(403).send("No Game found...");
+      }
+    }).catch(function(err) {
+      res.status(400).send("Bad request. Please try again.");
+    })
+  }
 });
 
 router.put('/games/:id', function(req, res) {
